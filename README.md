@@ -15,7 +15,7 @@ Installation
 
 Clone the repository: 
 
-Bashgit clone https://github.com/Seventh-Circle-Canonn/SVN-ED-Orrery.git
+git clone https://github.com/Seventh-Circle-Canonn/SVN-ED-Orrery.git
 
 cd SVN-ED-Orrery
 
@@ -23,13 +23,15 @@ Install dependencies:
 
 This project requires Python 3. You can install the required libraries using pip:
 
-Bashpip install -r requirements.txt
+pip install -r requirements.txt
 
 Dependencies: pygame, numpy, requests, datetime.
 
 Run the Simulation:
 
-Bashpython main.py
+python main.py
+
+NOTE:  I run it in VSCode.  Can be turned into .exe via pyinstaller.
 
 Controls:
 
