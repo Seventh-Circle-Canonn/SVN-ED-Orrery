@@ -327,7 +327,7 @@ class Orrery:
                 self.input_text = "" # Auto-clear on click
             elif self.go_button_rect.collidepoint(event.pos):
                 self.input_active = False
-                return "SEARCH_SYSTEM"
+                return "RESET_VIEW"
             elif self.toggle_names_button_rect.collidepoint(event.pos):
                 self.label_display_mode = (self.label_display_mode + 1) % 4
                 self.input_active = False
@@ -670,6 +670,35 @@ class Orrery:
         coords_text = f"x | {final_x:.6f}  z | {-final_y:.6f}  y | {final_z:.6f}"
         coords_surface = ui_font.render(coords_text, True, WHITE)
         screen.blit(coords_surface, (25, 115))
+
+        # Distance Display
+        # 1 AU = 499.00478 Light Seconds
+        au_to_ls = 499.00478
+        
+        # Distance to System Origin (0,0,0)
+        # current_focus_offset_au is the vector from Origin to Current Focus.
+        # So magnitude is the distance.
+        dist_origin_au = np.linalg.norm(self.current_focus_offset_au)
+        dist_origin_ls = dist_origin_au * au_to_ls
+        
+        # Distance to Main Star
+        dist_main_star_ls = 0.0
+        if self.main_star_id is not None:
+            # Find main star body
+            main_star_body = next((b for b in self.celestial_bodies if b['id'] == self.main_star_id), None)
+            if main_star_body:
+                # current_pos_au is already relative to the current focus (camera center)
+                # so magnitude is the distance from camera focus to main star.
+                dist_ms_au = np.linalg.norm(main_star_body['current_pos_au'])
+                dist_main_star_ls = dist_ms_au * au_to_ls
+        
+        dist_text_origin = f"Distance to Origin | {dist_origin_ls:.6f}ls"
+        dist_surface_origin = ui_font.render(dist_text_origin, True, WHITE)
+        screen.blit(dist_surface_origin, (25, 145))
+
+        dist_text_ms = f"Distance to Main Star | {dist_main_star_ls:.6f}ls"
+        dist_surface_ms = ui_font.render(dist_text_ms, True, WHITE)
+        screen.blit(dist_surface_ms, (25, 175))
 
         status_box_rect = pygame.Rect(20, 20, 300, 30)
         # pygame.draw.rect(screen, BLACK, status_box_rect, 1) # Optional background

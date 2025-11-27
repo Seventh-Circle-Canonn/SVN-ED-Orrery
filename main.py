@@ -89,6 +89,8 @@ def main():
                         pygame.display.set_caption(f"Orrery | {system_to_find} |")
                     else:
                         orrery_sim.info_text = "System not found or no data."
+            elif ui_action == "RESET_VIEW":
+                orrery_sim.reset_view()
             elif ui_action == "RESET_TIME":
                 current_time_for_orrery = get_elite_current_time_dt()
             
