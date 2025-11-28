@@ -124,16 +124,23 @@ def calculate_position_at_time(
     Omega_rad = np.radians(lon_asc_node_deg) # Longitude of Ascending Node
     M0_rad = np.radians(mean_anomaly_epoch_deg) # Mean Anomaly at Epoch
 
-    # 2. Parse Epoch Time (t0)
+    # 2. Parse Epoch Time (t0) This has been updated to fix a bug between Spansh Data and Elite Time Data.
     try:
         if 'T' in epoch_t0_str and 'Z' in epoch_t0_str:
             t0_dt = datetime.strptime(epoch_t0_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
         elif '+' in epoch_t0_str:
             t0_dt = datetime.strptime(epoch_t0_str.split('+')[0], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
-        else: # Fallback for ISO format without Z or + (assuming UTC)
+        else:
             t0_dt = datetime.fromisoformat(epoch_t0_str).replace(tzinfo=timezone.utc)
+            
+        # THE FIX: SYNC SPANSH MEAN ANOMOLY TIME TO ELITE TIME
+        # i.e. Spansh returns time data to us as 2025. Our sim is in 3311. 
+        # We lift the Spansh data timestamp into the future to match the sim to avoid calculating 1286 years of orbits.
+        t0_dt = t0_dt.replace(year=t0_dt.year + 1286) 
+        # -----------------------------------------
+
     except Exception:
-        t0_dt = current_time_dt 
+        t0_dt = current_time_dt
 
     # 3. Calculate Mean Anomaly (M) at current time
     # How much time has passed since the reference epoch.

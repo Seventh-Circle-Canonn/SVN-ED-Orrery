@@ -371,7 +371,7 @@ class Orrery:
                     # 1 year = 31,536,000 seconds.
                     # At 60 FPS, 1 frame = 1/60 sec, so we need a huge multiplier, let's try max multiplier = 10^7
                     max_multiplier = 10000000 
-                    exponent = 3 # Cubic curve for fine control near center.  Test, may not fully work.
+                    exponent = 5 # Higher exponent for finer control near center.
                     
                     self.time_acceleration_factor = (abs(normalized_dist) ** exponent) * max_multiplier
                     if normalized_dist < 0:
