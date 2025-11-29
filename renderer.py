@@ -4,6 +4,8 @@ import sys
 import numpy as np
 from config import *
 from physics import calculate_position_at_time, calculate_orbit_points, get_elite_time
+from starfield import Starfield
+import pyperclip
 
 # --- Pygame Specific Helper Functions ---
 def initial_world_rotation(x, y, z):
@@ -70,6 +72,8 @@ class Orrery:
         self.plane_radius_au = DEFAULT_PLANE_RADIUS_AU 
         self.main_star_id = None
         self.main_star_id = None
+        self.starfield = Starfield()
+        self.cached_stars = []
         self.process_api_data(api_body_data)
         
         # Orbit Center State
@@ -77,9 +81,9 @@ class Orrery:
         self.orbit_center_name = "System Origin"
         self.current_focus_offset_au = np.array([0.0, 0.0, 0.0])
         self.body_screen_coords = {} # {body_id: (x, y, radius)}
-        
-        # Initialize scrap for clipboard operations
-        pygame.scrap.init()
+
+        # Initialize scrap for clipboard operations - REMOVED in favor of pyperclip
+        # pygame.scrap.init()
 
         projection_scale_factor_for_display = 20 
         camera_z_offset_for_display = 50       
@@ -138,6 +142,10 @@ class Orrery:
         reset_button_width = 40
         self.reset_time_button_rect = pygame.Rect(SCREEN_WIDTH - go_button_width - toggle_button_width - reset_button_width, SCREEN_HEIGHT - bottom_bar_height, reset_button_width, bottom_bar_height)
  
+        # Star Visibility Button (Dusty Red box) - Left of Reset Time button
+        star_button_width = 40
+        self.star_visibility_button_rect = pygame.Rect(SCREEN_WIDTH - go_button_width - toggle_button_width - reset_button_width - star_button_width, SCREEN_HEIGHT - bottom_bar_height, star_button_width, bottom_bar_height)
+        self.star_visibility_mode = 0 # 0: Stars+Names, 1: Stars Only, 2: Off
 
     def reset_view(self):
         """This bit resets the camera view to the default state."""
@@ -306,6 +314,9 @@ class Orrery:
         else:
             self.plane_radius_au = DEFAULT_PLANE_RADIUS_AU
         print(f"Loaded {len(self.celestial_bodies)} bodies. Plane radius (AU): {self.plane_radius_au:.2f}")
+        
+        # Update starfield cache
+        self.cached_stars = self.starfield.calculate_star_positions(self.system_coords, self.plane_radius_au)
 
     def camera_view_rotation(self, x, y, z, angle_x_deg, angle_y_deg):
         """ Rotates a 3D point (already in the rotated world space) by camera view angles. """
@@ -334,6 +345,9 @@ class Orrery:
             elif self.reset_time_button_rect.collidepoint(event.pos):
                 self.input_active = False
                 return "RESET_TIME"
+            elif self.star_visibility_button_rect.collidepoint(event.pos):
+                self.star_visibility_mode = (self.star_visibility_mode + 1) % 3
+                self.input_active = False
             else:
                 handle_rect = pygame.Rect(self.slider_handle_pos - self.slider_handle_radius, self.slider_rect.centery - self.slider_handle_radius, self.slider_handle_radius * 2, self.slider_handle_radius * 2)
                 # attempt to allow clicking slightly outside the exact handle...
@@ -386,16 +400,16 @@ class Orrery:
                 elif event.key == pygame.K_BACKSPACE:
                     self.input_text = self.input_text[:-1]
                 elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL):
-                    # Handle paste into text box (this was an utter pig)
-                    clipboard_content = pygame.scrap.get(pygame.SCRAP_TEXT)
-                    if clipboard_content:
-                        try:
-                            # Decode bytes to string if necessary (pygame.scrap usually returns bytes)
-                            text_to_paste = clipboard_content.decode('utf-8').strip()
-                            text_to_paste = text_to_paste.replace('\x00', '') # Remove the null characters
+                    # Handle paste into text box using pyperclip (Cross-platform friendly)
+                    try:
+                        text_to_paste = pyperclip.paste()
+                        if text_to_paste:
+                            text_to_paste = text_to_paste.strip()
+                            # Basic sanitization
+                            text_to_paste = "".join(ch for ch in text_to_paste if ch.isprintable())
                             self.input_text += text_to_paste
-                        except Exception as e:
-                            print(f"Error pasting text: {e}")
+                    except Exception as e:
+                        print(f"Error pasting text with pyperclip: {e}")
                 else:
                     self.input_text += event.unicode
         return None
@@ -616,6 +630,48 @@ class Orrery:
                 if len(projected_orbit_points_panned) > 1:
                     pygame.draw.lines(screen, ORBIT_GREY, False, projected_orbit_points_panned, 1)
 
+        # --- Draw Starfield ---
+        # Stars are projected onto a sphere around the SYSTEM ORIGIN.
+        # If we are panning (orbit_center_body_id is set), we need to adjust their relative position.
+        
+        if self.star_visibility_mode != 2: # If not OFF
+            for star in self.cached_stars:
+                # Position relative to system origin
+                pos_local = star['pos_local'] # (x, y, z)
+                
+                # Adjust for camera focus (if we are looking at a planet, the system origin moves away)
+                # current_focus_offset_au is the vector from System Origin to Camera Focus.
+                # So position relative to Camera Focus is: pos_local - current_focus_offset_au
+                
+                rel_x = pos_local[0] - self.current_focus_offset_au[0]
+                rel_y = pos_local[1] - self.current_focus_offset_au[1]
+                rel_z = pos_local[2] - self.current_focus_offset_au[2]
+                
+                # Rotate to World Space (Pygame coordinates)
+                wx, wy, wz = initial_world_rotation(rel_x, rel_y, rel_z)
+                
+                # Rotate by Camera View
+                cx, cy, cz = self.camera_view_rotation(wx, wy, wz, self.camera_rotation_x, self.camera_rotation_y)
+                
+                # Project to 2D
+                sx_proj, sy_proj, perspective = project_3d_to_2d(cx, cy, cz, scale_factor=self.camera_zoom, camera_z_offset=50, perspective_strength=0.001)
+                
+                sx = sx_proj + self.pan_offset_x
+                sy = sy_proj + self.pan_offset_y
+                
+                # Draw Star (Small dot)
+                # Only draw if in front of camera (roughly) - perspective check? 
+                
+                if perspective > 0.0001:
+                    pygame.draw.circle(screen, WHITE, (sx, sy), 1)
+                    
+                    if self.star_visibility_mode == 0: # Stars + Names
+                        # Draw Name
+                        name_surface = main_font.render(star['name'], True, DARK_GREY)
+                        # Center text below star
+                        name_rect = name_surface.get_rect(center=(sx, sy + 10))
+                        screen.blit(name_surface, name_rect)
+
         # --- UI Drawing ---
         ui_font = pygame.font.Font(None, 28)
         
@@ -636,6 +692,9 @@ class Orrery:
 
         # Reset Time Button - Blue Box
         pygame.draw.rect(screen, BLUE, self.reset_time_button_rect)
+
+        # Star Visibility Button - Dusty Red Box
+        pygame.draw.rect(screen, DUSTY_RED, self.star_visibility_button_rect)
 
         # Slider
         pygame.draw.rect(screen, WHITE, self.slider_rect) # Thin line

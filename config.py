@@ -21,7 +21,9 @@ RED = (255, 100, 100)
 GREEN = (120, 138, 48) # #788a30 
 YELLOW = (255, 255, 0)  
 ORANGE = (255, 165, 0)
-CYAN = (0, 255, 255)    
+CYAN = (0, 255, 255)
+DUSTY_RED = (180, 80, 80)
+DARK_GREY = (50, 50, 50)
 
 # Body type colors
 BODY_TYPE_COLORS = {
