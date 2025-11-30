@@ -2,4 +2,3 @@
 numpy
 requests
 datetime
-pyperclip

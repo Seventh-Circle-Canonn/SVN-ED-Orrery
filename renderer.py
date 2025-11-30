@@ -5,7 +5,7 @@ import numpy as np
 from config import *
 from physics import calculate_position_at_time, calculate_orbit_points, get_elite_time
 from starfield import Starfield
-import pyperclip
+
 
 # --- Pygame Specific Helper Functions ---
 def initial_world_rotation(x, y, z):
@@ -82,8 +82,8 @@ class Orrery:
         self.current_focus_offset_au = np.array([0.0, 0.0, 0.0])
         self.body_screen_coords = {} # {body_id: (x, y, radius)}
 
-        # Initialize scrap for clipboard operations - REMOVED in favor of pyperclip
-        # pygame.scrap.init()
+        # Initialize scrap for clipboard operations - Required for Linux fallback
+        pygame.scrap.init()
 
         projection_scale_factor_for_display = 20 
         camera_z_offset_for_display = 50       
@@ -145,7 +145,7 @@ class Orrery:
         # Star Visibility Button (Dusty Red box) - Left of Reset Time button
         star_button_width = 40
         self.star_visibility_button_rect = pygame.Rect(SCREEN_WIDTH - go_button_width - toggle_button_width - reset_button_width - star_button_width, SCREEN_HEIGHT - bottom_bar_height, star_button_width, bottom_bar_height)
-        self.star_visibility_mode = 0 # 0: Stars+Names, 1: Stars Only, 2: Off
+        self.star_visibility_mode = 2 # 0: Stars+Names, 1: Stars Only, 2: Off - Default to Off
 
     def reset_view(self):
         """This bit resets the camera view to the default state."""
@@ -346,7 +346,8 @@ class Orrery:
                 self.input_active = False
                 return "RESET_TIME"
             elif self.star_visibility_button_rect.collidepoint(event.pos):
-                self.star_visibility_mode = (self.star_visibility_mode + 1) % 3
+                # Cycle: Off (2) -> Stars (1) -> Stars+Names (0) -> Off (2)
+                self.star_visibility_mode = (self.star_visibility_mode - 1) % 3
                 self.input_active = False
             else:
                 handle_rect = pygame.Rect(self.slider_handle_pos - self.slider_handle_radius, self.slider_rect.centery - self.slider_handle_radius, self.slider_handle_radius * 2, self.slider_handle_radius * 2)
@@ -401,15 +402,18 @@ class Orrery:
                     self.input_text = self.input_text[:-1]
                 elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL):
                     # Handle paste into text box using pyperclip (Cross-platform friendly)
+                    # Handle paste into text box using pygame.scrap (Cross-platform friendly)
+                    text_to_paste = None
                     try:
-                        text_to_paste = pyperclip.paste()
-                        if text_to_paste:
-                            text_to_paste = text_to_paste.strip()
+                        content = pygame.scrap.get(pygame.SCRAP_TEXT)
+                        if content:
+                            # content is bytes on Linux usually
+                            text_to_paste = content.decode('utf-8').strip('\x00')
                             # Basic sanitization
                             text_to_paste = "".join(ch for ch in text_to_paste if ch.isprintable())
                             self.input_text += text_to_paste
                     except Exception as e:
-                        print(f"Error pasting text with pyperclip: {e}")
+                        print(f"Error pasting text with pygame.scrap: {e}")
                 else:
                     self.input_text += event.unicode
         return None
