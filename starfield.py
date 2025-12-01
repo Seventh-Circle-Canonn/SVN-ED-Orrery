@@ -3,8 +3,11 @@ import math
 import numpy as np
 import os
 
+starfield_data = "guardian_ruins.csv"
+#starfield_data = "starfield_data.csv"
+
 class Starfield:
-    def __init__(self, data_file="starfield_data.csv"):
+    def __init__(self, data_file=starfield_data):
         self.stars = []
         self.load_data(data_file)
 

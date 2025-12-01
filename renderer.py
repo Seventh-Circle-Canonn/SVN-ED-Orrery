@@ -729,8 +729,8 @@ class Orrery:
         final_z = sys_z + (self.current_focus_offset_au[2] * au_to_ly)
         
         # Swap of Y and Z for display (ED coordinate system quirk, might not be correct, need to check)
-        # And format "x | ... z | ... y | ..." (Sequence reordered)
-        coords_text = f"x | {final_x:.6f}  z | {-final_y:.6f}  y | {final_z:.6f}"
+        # And format "EDx | ... EDy[z] | ... EDz[y] | ..." (Sequence reordered)
+        coords_text = f"EDx[x] | {final_x:.6f}  EDy[z] | {-final_y:.6f}  EDz[y] | {final_z:.6f}"
         coords_surface = ui_font.render(coords_text, True, WHITE)
         screen.blit(coords_surface, (25, 115))
 
