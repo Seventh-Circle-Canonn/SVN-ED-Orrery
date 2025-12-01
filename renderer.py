@@ -718,8 +718,8 @@ class Orrery:
         
         # Ensure system_coords are floats
         sys_x = float(self.system_coords.get('x', 0))
-        sys_y = float(self.system_coords.get('y', 0))
-        sys_z = float(self.system_coords.get('z', 0))
+        sys_y = float(self.system_coords.get('z', 0))
+        sys_z = float(self.system_coords.get('y', 0))
         
         # Calculate final coordinates
         # Spansh/EDSM coords are usually Light Years.
@@ -730,7 +730,7 @@ class Orrery:
         
         # Swap of Y and Z for display (ED coordinate system quirk, might not be correct, need to check)
         # And format "EDx | ... EDy[z] | ... EDz[y] | ..." (Sequence reordered)
-        coords_text = f"EDx[x] | {final_x:.6f}  EDy[z] | {-final_y:.6f}  EDz[y] | {final_z:.6f}"
+        coords_text = f"EDx [x] | {final_x:.6f}  EDy [z] | {final_z:.6f}  EDz [y] | {-final_y:.6f}  "
         coords_surface = ui_font.render(coords_text, True, WHITE)
         screen.blit(coords_surface, (25, 115))
 
