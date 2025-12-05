@@ -5,8 +5,8 @@ Can make things go wrong...  so...  good luck :)
 """
 
 # --- Constants ---
-SCREEN_WIDTH = 1400
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1500
+SCREEN_HEIGHT = 900
 FPS = 60
 
 # Colors
