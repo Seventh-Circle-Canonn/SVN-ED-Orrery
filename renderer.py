@@ -316,7 +316,7 @@ class Orrery:
         print(f"Loaded {len(self.celestial_bodies)} bodies. Plane radius (AU): {self.plane_radius_au:.2f}")
         
         # Update starfield cache
-        self.cached_stars = self.starfield.calculate_star_positions(self.system_coords, self.plane_radius_au * 1.2)
+        self.cached_stars = self.starfield.calculate_star_positions(self.system_coords, self.plane_radius_au * 1.2, exclude_name=self.current_system_name)
 
     def camera_view_rotation(self, x, y, z, angle_x_deg, angle_y_deg):
         """ Rotates a 3D point (already in the rotated world space) by camera view angles. """

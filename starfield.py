@@ -55,13 +55,14 @@ class Starfield:
         except Exception as e:
             print(f"Error loading starfield data: {e}")
 
-    def calculate_star_positions(self, system_origin, radius):
+    def calculate_star_positions(self, system_origin, radius, exclude_name=None):
         """
         Calculates the positions of stars on a sphere around the system origin.
         
         Args:
             system_origin (dict or list): {'x': val, 'y': val, 'z': val} or [x, y, z] of the current system.
             radius (float): The radius of the sphere (AU).
+            exclude_name (str): The name of the current system to exclude from the starfield.
             
         Returns:
             list: List of dicts with 'name' and 'pos_local' (x, y, z relative to system center).
@@ -69,15 +70,37 @@ class Starfield:
         if not self.stars:
             return []
 
-        # Ensure system_origin is a numpy array
+        # Ensure system_origin is a numpy array and transform to matching coordinate space
+        # Star Data loaded as: X, -Z, Y
+        # System Data comes as: X, Y, Z
+        # We must transform System Data to 'Star Space' to calculate the difference vector correctly.
+        
+        raw_x, raw_y, raw_z = 0.0, 0.0, 0.0
+        
         if isinstance(system_origin, dict):
-            origin = np.array([float(system_origin.get('x', 0)), float(system_origin.get('y', 0)), float(system_origin.get('z', 0))])
+            raw_x = float(system_origin.get('x', 0))
+            raw_y = float(system_origin.get('y', 0))
+            raw_z = float(system_origin.get('z', 0))
         else:
-            origin = np.array(system_origin, dtype=float)
+            raw_x = float(system_origin[0])
+            raw_y = float(system_origin[1])
+            raw_z = float(system_origin[2])
+            
+        # Transform origin to match star coordinate space (X, -Z, Y)
+        # Note: star['pos'] was loaded with y = -row[3] (Z) and z = row[2] (Y)
+        # So we do the same mapping here.
+        origin = np.array([raw_x, -raw_z, raw_y])
 
         projected_stars = []
         
+        # Prepare exclude name for case-insensitive comparison
+        idx_exclude = exclude_name.lower().strip() if exclude_name else None
+        
         for star in self.stars:
+            # Check for exclusion by name
+            if idx_exclude and star['name'].lower().strip() == idx_exclude:
+                continue
+
             # Vector from current system to the star
             # Star position is absolute in the galaxy (presumably light years or similar unit as system coords)
             # We want to project this direction onto a sphere of `radius` around the origin.
