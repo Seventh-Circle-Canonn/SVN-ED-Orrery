@@ -1,15 +1,26 @@
 import csv
 import math
 import numpy as np
+import sys
 import os
 
 starfield_data = "guardian_ruins.csv"
 #starfield_data = "constellation_data.csv"
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 class Starfield:
     def __init__(self, data_file=starfield_data):
         self.stars = []
-        self.load_data(data_file)
+        self.load_data(resource_path(data_file))
 
     def load_data(self, filename):
         """Loads star data from a CSV file."""
