@@ -358,23 +358,19 @@ class Orrery:
                 return "RESET_TIME"
             elif self.star_visibility_button_rect.collidepoint(event.pos):
                 self.input_active = False
-                # Cycle: Off (2) -> Stars (1) -> Stars+Names (0) -> Off (2)
-                # If currently Off (2), ask for file before switching to Stars (1)
-                if self.star_visibility_mode == 2:
-                    if self.starfield.stars:
-                         self.star_visibility_mode = 1
-                    else:
-                        filename = self.select_starfield_file()
-                        if filename:
-                            self.starfield.load_data(filename)
-                            # Recalculate cache with new data
-                            self.cached_stars = self.starfield.calculate_star_positions(self.system_coords, self.plane_radius_au * 1.2, exclude_name=self.current_system_name)
-                            self.star_visibility_mode = 1
-                        else:
-                            # User cancelled, do nothing (stay Off)
-                            pass
-                else:
+                if event.button == 1:
+                    # Left Click: Cycle Mode Only
                     self.star_visibility_mode = (self.star_visibility_mode - 1) % 3
+                elif event.button == 3:
+                    # Right Click: Load File
+                    filename = self.select_starfield_file()
+                    if filename:
+                        self.starfield.load_data(filename)
+                        # Recalculate cache with new data
+                        self.cached_stars = self.starfield.calculate_star_positions(self.system_coords, self.plane_radius_au * 1.2, exclude_name=self.current_system_name)
+                        self.star_visibility_mode = 1 # Force On
+                    else:
+                        pass
             else:
                 handle_rect = pygame.Rect(self.slider_handle_pos - self.slider_handle_radius, self.slider_rect.centery - self.slider_handle_radius, self.slider_handle_radius * 2, self.slider_handle_radius * 2)
                 # attempt to allow clicking slightly outside the exact handle...
