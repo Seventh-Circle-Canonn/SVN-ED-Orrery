@@ -83,6 +83,7 @@ class Orrery:
         self.orbit_center_name = "System Origin"
         self.current_focus_offset_au = np.array([0.0, 0.0, 0.0])
         self.body_screen_coords = {} # {body_id: (x, y, radius)}
+        self.star_screen_coords = [] # List of (x, y, name)
 
         # Initialize scrap for clipboard operations - Required for Linux fallback
         pygame.scrap.init()
@@ -468,6 +469,15 @@ class Orrery:
             print(f"Orbit center set to: {self.orbit_center_name}")
             self.pan_offset_x = 0
             self.pan_offset_y = 0
+            return ("SET_FOCUS", self.orbit_center_name)
+        
+        # Check Starfield Clicks
+        for sx, sy, star_name in self.star_screen_coords:
+             # Simple point collision with small radius
+             if math.hypot(mouse_pos[0] - sx, mouse_pos[1] - sy) < 10:
+                 return ("LOAD_SYSTEM", star_name)
+        
+        return None
 
     def update_system_data(self, api_body_data, system_name, system_coords):
         """Updates the orrery with new system data."""
@@ -551,6 +561,7 @@ class Orrery:
         """
         screen.fill(BLACK)
         self.body_screen_coords = {} # Reset frame hit detection
+        self.star_screen_coords = [] # Reset star hit detection
         current_plane_radius = self.plane_radius_au # Use AU value for 3D calculations
         
         if self.orbit_center_body_id is None:
@@ -700,6 +711,9 @@ class Orrery:
                         # Center text below star
                         name_rect = name_surface.get_rect(center=(sx, sy + 10))
                         screen.blit(name_surface, name_rect)
+                    
+                    # Cache for click detection
+                    self.star_screen_coords.append((sx, sy, star['name']))
 
         # --- UI Drawing ---
         ui_font = pygame.font.Font(None, 28)

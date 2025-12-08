@@ -113,7 +113,22 @@ def main():
                         middle_mouse_dragging = True
                         last_mouse_pos = event.pos
                 elif event.button == 3:
-                    orrery_sim.handle_right_click(event.pos)
+                    action_result = orrery_sim.handle_right_click(event.pos)
+                    if action_result:
+                        action_type = action_result[0]
+                        payload = action_result[1]
+                        
+                        if action_type == "LOAD_SYSTEM":
+                            system_to_find = payload
+                            print(f"Navigating to star: {system_to_find}")
+                            new_body_data, system_coords = fetch_system_data(system_to_find)
+                            if new_body_data:
+                                orrery_sim.update_system_data(new_body_data, system_to_find, system_coords)
+                                pygame.display.set_caption(f"Orrery | {system_to_find} |")
+                            else:
+                                print(f"Could not load data for {system_to_find}")
+                        elif action_type == "SET_FOCUS":
+                            pass # Already handled in renderer, but we could log it here
                 elif event.button == 4: 
                     orrery_sim.camera_zoom *= 1.1
                 elif event.button == 5: 
