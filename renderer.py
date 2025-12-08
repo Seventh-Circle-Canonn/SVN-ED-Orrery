@@ -5,6 +5,8 @@ import numpy as np
 from config import *
 from physics import calculate_position_at_time, calculate_orbit_points, get_elite_time
 from starfield import Starfield
+import tkinter as tk
+from tkinter import filedialog
 
 
 # --- Pygame Specific Helper Functions ---
@@ -72,7 +74,7 @@ class Orrery:
         self.plane_radius_au = DEFAULT_PLANE_RADIUS_AU 
         self.main_star_id = None
         self.main_star_id = None
-        self.starfield = Starfield()
+        self.starfield = Starfield(None)
         self.cached_stars = []
         self.process_api_data(api_body_data)
         
@@ -330,6 +332,14 @@ class Orrery:
         y_yawed = y_pitched
         return x_yawed, y_yawed, z_yawed
     
+    def select_starfield_file(self):
+        """Opens a file dialog to select the starfield CSV."""
+        root = tk.Tk()
+        root.withdraw() # Hide the main window
+        file_path = filedialog.askopenfilename(title="Select Starfield .CSV", filetypes=[("CSV Files", "*.csv")])
+        root.destroy()
+        return file_path
+
     def handle_ui_event(self, event):
         """Handles UI events for the input box and buttons."""
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -346,9 +356,24 @@ class Orrery:
                 self.input_active = False
                 return "RESET_TIME"
             elif self.star_visibility_button_rect.collidepoint(event.pos):
-                # Cycle: Off (2) -> Stars (1) -> Stars+Names (0) -> Off (2)
-                self.star_visibility_mode = (self.star_visibility_mode - 1) % 3
                 self.input_active = False
+                # Cycle: Off (2) -> Stars (1) -> Stars+Names (0) -> Off (2)
+                # If currently Off (2), ask for file before switching to Stars (1)
+                if self.star_visibility_mode == 2:
+                    if self.starfield.stars:
+                         self.star_visibility_mode = 1
+                    else:
+                        filename = self.select_starfield_file()
+                        if filename:
+                            self.starfield.load_data(filename)
+                            # Recalculate cache with new data
+                            self.cached_stars = self.starfield.calculate_star_positions(self.system_coords, self.plane_radius_au * 1.2, exclude_name=self.current_system_name)
+                            self.star_visibility_mode = 1
+                        else:
+                            # User cancelled, do nothing (stay Off)
+                            pass
+                else:
+                    self.star_visibility_mode = (self.star_visibility_mode - 1) % 3
             else:
                 handle_rect = pygame.Rect(self.slider_handle_pos - self.slider_handle_radius, self.slider_rect.centery - self.slider_handle_radius, self.slider_handle_radius * 2, self.slider_handle_radius * 2)
                 # attempt to allow clicking slightly outside the exact handle...

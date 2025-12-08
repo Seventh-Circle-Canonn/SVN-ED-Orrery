@@ -18,12 +18,18 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 class Starfield:
-    def __init__(self, data_file=starfield_data):
+    def __init__(self, data_file=None):
         self.stars = []
-        self.load_data(resource_path(data_file))
+        if data_file:
+            self.load_data(resource_path(data_file))
 
     def load_data(self, filename):
         """Loads star data from a CSV file."""
+        self.stars = [] # Clear existing data
+        
+        if not filename:
+            return
+
         if not os.path.exists(filename):
             print(f"Error: Starfield data file '{filename}' not found.")
             return
