@@ -117,7 +117,7 @@ class Orrery:
         go_button_width = 40
         self.go_button_rect = pygame.Rect(SCREEN_WIDTH - go_button_width, SCREEN_HEIGHT - bottom_bar_height, go_button_width, bottom_bar_height)
 
-        # Toggle Names Button (Grey box) - Left of Go button
+        # Toggle Names Button
         toggle_button_width = 40
         self.toggle_names_button_rect = pygame.Rect(SCREEN_WIDTH - go_button_width - toggle_button_width, SCREEN_HEIGHT - bottom_bar_height, toggle_button_width, bottom_bar_height)
         self.label_display_mode = 0 # 0: Name, 1: Type, 2: Atmosphere, 3: Off
@@ -126,7 +126,6 @@ class Orrery:
         # Widen to fill space up to buttons (with some margin)
         available_width = SCREEN_WIDTH - go_button_width - toggle_button_width - (margin * 2)
         self.input_rect = pygame.Rect(margin, SCREEN_HEIGHT - bottom_bar_height + margin, available_width, input_height)
-
         
         # Info text (Bodies | Plane) - move to top left under system name, aligned with it
         # System name is at (25, 25), so we align x to 25.
@@ -729,17 +728,17 @@ class Orrery:
         screen.blit(text_surface, (self.input_rect.x + 5, self.input_rect.y + 5))
         self.input_rect.w = max(300, text_surface.get_width() + 10) 
         
-        # Go Button - Green Box
+        # Go Button
         pygame.draw.rect(screen, GREEN, self.go_button_rect)
 
-        # Toggle Names Button - Grey Box
-        pygame.draw.rect(screen, LIGHT_GREY, self.toggle_names_button_rect)
+        # Toggle Names Button
+        pygame.draw.rect(screen, BLUE, self.toggle_names_button_rect)
 
-        # Reset Time Button - Blue Box
-        pygame.draw.rect(screen, BLUE, self.reset_time_button_rect)
+        # Reset Time Button
+        pygame.draw.rect(screen, DUSTY_RED, self.reset_time_button_rect)
 
-        # Star Visibility Button - Dusty Red Box
-        pygame.draw.rect(screen, DUSTY_RED, self.star_visibility_button_rect)
+        # Star Visibility Button
+        pygame.draw.rect(screen, LIGHT_GREY, self.star_visibility_button_rect)
 
         # Slider
         pygame.draw.rect(screen, WHITE, self.slider_rect) # Thin line
