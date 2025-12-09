@@ -124,7 +124,7 @@ class Orrery:
 
         # Input box in bottom bar
         # Widen to fill space up to buttons (with some margin)
-        available_width = SCREEN_WIDTH - go_button_width - toggle_button_width - (margin * 3)
+        available_width = SCREEN_WIDTH - go_button_width - toggle_button_width - (margin * 2)
         self.input_rect = pygame.Rect(margin, SCREEN_HEIGHT - bottom_bar_height + margin, available_width, input_height)
 
         
@@ -486,6 +486,7 @@ class Orrery:
         self.current_focus_offset_au = np.array([0.0, 0.0, 0.0])
         self.process_api_data(api_body_data)
         self.info_text = f"Bodies: {len(self.celestial_bodies)} | Plane: {self.plane_radius_au:.2f} AU"
+        self.input_text = system_name
 
     def update(self, current_time_dt):
         """
@@ -714,12 +715,17 @@ class Orrery:
         # --- UI Drawing ---
         ui_font = pygame.font.Font(None, 28)
         
-        # Bottom White Bar
-        pygame.draw.rect(screen, WHITE, self.bottom_bar_rect)
-        # pygame.draw.rect(screen, WHITE, self.input_rect) # Background (already white from bar)
-        # pygame.draw.rect(screen, BLACK, self.input_rect, 1) # Border REMOVED
+        input_bg_color = MID_GREY if self.input_active else WHITE
         
-        text_surface = ui_font.render(self.input_text, True, BLACK)
+        # Bottom White Bar (now dynamic)
+        pygame.draw.rect(screen, input_bg_color, self.bottom_bar_rect)
+        pygame.draw.rect(screen, input_bg_color, self.input_rect)
+        
+        if self.input_text == "" and not self.input_active:
+            text_surface = ui_font.render("Enter System Name", True, LIGHT_GREY)
+        else:
+            text_surface = ui_font.render(self.input_text, True, BLACK)
+
         screen.blit(text_surface, (self.input_rect.x + 5, self.input_rect.y + 5))
         self.input_rect.w = max(300, text_surface.get_width() + 10) 
         

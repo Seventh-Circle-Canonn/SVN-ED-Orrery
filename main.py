@@ -16,7 +16,6 @@ def main():
     2.  **Time Management**: Updates the simulation time.
         - If the slider is used, time accelerates (or reverses).
         - Otherwise, time flows at 1x real-time speed.
-        
     3.  **Update**: Calls `orrery_sim.update()` to move the planets.
     4.  **Draw**: Calls `orrery_sim.draw()` to render the frame.
     """
