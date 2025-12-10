@@ -4,8 +4,8 @@ import math
 import sys
 import numpy as np
 from config import *
+from starfield import Starfield, resource_path
 from physics import calculate_position_at_time, calculate_orbit_points, get_elite_time
-from starfield import Starfield
 import tkinter as tk
 from tkinter import filedialog
 
@@ -152,12 +152,14 @@ class Orrery:
 
         # Load button assets
         try:
-            self.go_button_img = pygame.image.load(os.path.join("assets", "go_button.png")).convert_alpha()
-            self.name_button_img = pygame.image.load(os.path.join("assets", "name_button.png")).convert_alpha()
-            self.time_button_img = pygame.image.load(os.path.join("assets", "time_button.png")).convert_alpha()
-            self.starfield_button_img = pygame.image.load(os.path.join("assets", "starfield_button.png")).convert_alpha()
+            # Wrap the paths like this:
+            self.go_button_img = pygame.image.load(resource_path(os.path.join("assets", "go_button.png"))).convert_alpha()
+            self.name_button_img = pygame.image.load(resource_path(os.path.join("assets", "name_button.png"))).convert_alpha()
+            self.time_button_img = pygame.image.load(resource_path(os.path.join("assets", "time_button.png"))).convert_alpha()
+            self.starfield_button_img = pygame.image.load(resource_path(os.path.join("assets", "starfield_button.png"))).convert_alpha()
         except Exception as e:
             print(f"Error loading assets: {e}")
+
             # Fallback to surfaces of same size if load fails (or just let it crash/handle gracefully)
             self.go_button_img = None
             self.name_button_img = None
