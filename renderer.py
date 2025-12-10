@@ -1,4 +1,5 @@
 import pygame
+import os
 import math
 import sys
 import numpy as np
@@ -148,6 +149,20 @@ class Orrery:
         star_button_width = 40
         self.star_visibility_button_rect = pygame.Rect(SCREEN_WIDTH - go_button_width - toggle_button_width - reset_button_width - star_button_width, SCREEN_HEIGHT - bottom_bar_height, star_button_width, bottom_bar_height)
         self.star_visibility_mode = 2 # 0: Stars+Names, 1: Stars Only, 2: Off - Default to Off
+
+        # Load button assets
+        try:
+            self.go_button_img = pygame.image.load(os.path.join("assets", "go_button.png")).convert_alpha()
+            self.name_button_img = pygame.image.load(os.path.join("assets", "name_button.png")).convert_alpha()
+            self.time_button_img = pygame.image.load(os.path.join("assets", "time_button.png")).convert_alpha()
+            self.starfield_button_img = pygame.image.load(os.path.join("assets", "starfield_button.png")).convert_alpha()
+        except Exception as e:
+            print(f"Error loading assets: {e}")
+            # Fallback to surfaces of same size if load fails (or just let it crash/handle gracefully)
+            self.go_button_img = None
+            self.name_button_img = None
+            self.time_button_img = None
+            self.starfield_button_img = None
 
     def reset_view(self):
         """This bit resets the camera view to the default state."""
@@ -730,15 +745,23 @@ class Orrery:
         
         # Go Button
         pygame.draw.rect(screen, GREEN, self.go_button_rect)
+        if self.go_button_img:
+            screen.blit(self.go_button_img, self.go_button_rect)
 
         # Toggle Names Button
         pygame.draw.rect(screen, BLUE, self.toggle_names_button_rect)
+        if self.name_button_img:
+            screen.blit(self.name_button_img, self.toggle_names_button_rect)
 
         # Reset Time Button
         pygame.draw.rect(screen, DUSTY_RED, self.reset_time_button_rect)
+        if self.time_button_img:
+            screen.blit(self.time_button_img, self.reset_time_button_rect)
 
         # Star Visibility Button
         pygame.draw.rect(screen, LIGHT_GREY, self.star_visibility_button_rect)
+        if self.starfield_button_img:
+            screen.blit(self.starfield_button_img, self.star_visibility_button_rect)
 
         # Slider
         pygame.draw.rect(screen, WHITE, self.slider_rect) # Thin line

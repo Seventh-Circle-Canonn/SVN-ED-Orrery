@@ -50,15 +50,15 @@ Zoom Camera: Mouse Wheel
 
 Set Orbit Center: Right Click on a planet/star
 
-Reset View: Double Middle Click or left-click green box.
+Reset View: Double Middle Click or left-click green button.
 
-Search System: Type in the bottom-left white box + Enter
+Search System: Click/Type in the bottom-left white box + Enter
 
 Time Warp: Drag the slider at the bottom centre left and right
 
-Load .csv:  Right-click red box.
+Load .csv:  Right-click grey skybox button.
 
-Buttons Generally:  Green = Zoom to Extents, Grey = Toggle Body Names, Blue = Reset Time, Red = Toggle Starfield Names.
+Buttons Generally:  Green = Zoom to Extents, Blue = Toggle Body Names, Red = Reset Time, Grey = Toggle Starfield Names.
 
 How it Works:
 
