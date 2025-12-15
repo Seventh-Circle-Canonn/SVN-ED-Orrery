@@ -3,7 +3,9 @@ from matplotlib.widgets import Slider
 import pandas as pd
 import numpy as np
 
-data_input = 'guardian_ruins_data.csv'
+#data_input = 'guardian_ruins_data.csv'
+#data_input = 'guardian_ruins_beta_only_data.csv'
+data_input = 'braintree_data.csv'
 
 def main():
     try:
